@@ -10,8 +10,8 @@ namespace RandomElementsSystem.Editor
     [CustomPropertyDrawer(typeof(SelectiveRandomWeightPropertyBase<,>), true)]
     public class SelectiveRandomWeightPropertyBasePropertyDrawer : PropertyDrawer
     {
-        private bool _isEqualWeightForAllItems;
-        private SerializedProperty _selectableValues;
+        protected bool _isEqualWeightForAllItems;
+        protected SerializedProperty _selectableValues;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -25,15 +25,15 @@ namespace RandomElementsSystem.Editor
             if (property.isExpanded && _selectableValues.isExpanded)
             {
                 var rect = new Rect(position.x + 150, position.y + 84.6f, position.width, EditorGUIUtility.singleLineHeight);
-                var minProbability = getMinProbability();
-                var maxProbability = getMaxProbability();
+                var minProbability = GetMinProbability();
+                var maxProbability = GetMaxProbability();
                 for (int i = 0; i < _selectableValues.arraySize; i++)
                 {
                     var element = _selectableValues.GetArrayElementAtIndex(i);
 
                     EditorGUI.LabelField(rect, new GUIContent("Probability : "));
 
-                    var probability = getProbabilityFor(i);
+                    var probability = GetProbabilityFor(i);
                     var style = new GUIStyle();
 
                     style.normal.textColor = Color.red;
@@ -59,13 +59,14 @@ namespace RandomElementsSystem.Editor
                     rect.y += GetPropertyHeight(element, label) + 2f;
                 }
             }
+        }
 
-            float getMinProbability()
+            protected float GetMinProbability()
             {
                 var minValue = float.MaxValue;
                 for (int i = 0; i < _selectableValues.arraySize; i++)
                 {
-                    var probability = getProbabilityFor(i);
+                    var probability = GetProbabilityFor(i);
                     if (minValue > probability)
                     {
                         minValue = probability;
@@ -74,12 +75,12 @@ namespace RandomElementsSystem.Editor
                 return minValue;
             }
 
-            float getMaxProbability()
+            protected float GetMaxProbability()
             {
                 var maxValue = 0f;
                 for (int i = 0; i < _selectableValues.arraySize; i++)
                 {
-                    var probability = getProbabilityFor(i);
+                    var probability = GetProbabilityFor(i);
                     if (maxValue < probability)
                     {
                         maxValue = probability;
@@ -88,7 +89,7 @@ namespace RandomElementsSystem.Editor
                 return maxValue;
             }
 
-            float getProbabilityFor(int index)
+            protected float GetProbabilityFor(int index)
             {
                 var value = 1f;
                 var total = 0f;
@@ -113,7 +114,6 @@ namespace RandomElementsSystem.Editor
 
                 return value / total * 100f;
             }
-        }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {

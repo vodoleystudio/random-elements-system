@@ -96,3 +96,4 @@ ProjectSettings/ClusterInputManager.asset
 ProjectSettings/boot.config
 ProjectSettings/AudioManager.asset
 Packages/packages-lock.json
+/.vscode

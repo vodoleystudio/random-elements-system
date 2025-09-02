@@ -13,6 +13,7 @@ namespace RandomElementsSystem.Editor
         protected bool _isEqualWeightForAllItems;
         protected SerializedProperty _selectableValues;
         private int _previousArraySize;
+        private bool _isInitialized;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -131,7 +132,14 @@ namespace RandomElementsSystem.Editor
 
             var currentSize = _selectableValues.arraySize;
 
-            if (currentSize == 1)
+            if (!_isInitialized)
+            {
+                _isInitialized = true;
+                _previousArraySize = currentSize;
+                return;
+            }
+
+            if (currentSize == 1 && _previousArraySize == 0)
             {
                 var element = _selectableValues.GetArrayElementAtIndex(0);
                 var weight = element.FindPropertyRelative("_weight");
@@ -153,5 +161,4 @@ namespace RandomElementsSystem.Editor
         }
     }
 }
-
 #endif

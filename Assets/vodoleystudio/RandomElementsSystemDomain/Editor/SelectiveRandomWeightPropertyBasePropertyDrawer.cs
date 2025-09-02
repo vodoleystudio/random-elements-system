@@ -4,6 +4,7 @@ using RandomElementsSystem.Types;
 
 using UnityEditor;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace RandomElementsSystem.Editor
 {
@@ -13,14 +14,32 @@ namespace RandomElementsSystem.Editor
         private bool _isEqualWeightForAllItems;
         private SerializedProperty _selectableValues;
 
+        private readonly Dictionary<string, int> _selectableValuesArraySizes = new();
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            var key = property.serializedObject.targetObject.GetInstanceID() + property.propertyPath;
+            _selectableValuesArraySizes.TryGetValue(key, out var previousSize);
+
             EditorGUI.PropertyField(position, property, label, true);
+
+            _selectableValues = property.FindPropertyRelative("_selectableValues");
+            if (_selectableValues.arraySize > previousSize)
+            {
+                for (int i = previousSize; i < _selectableValues.arraySize; i++)
+                {
+                    var element = _selectableValues.GetArrayElementAtIndex(i);
+                    var weight = element.FindPropertyRelative("_weight");
+                    weight.floatValue = 0f;
+                }
+
+                property.serializedObject.ApplyModifiedProperties();
+            }
+
+            _selectableValuesArraySizes[key] = _selectableValues.arraySize;
 
             var isEqualWeightForAllItems = property.FindPropertyRelative("_isEqualWeightForAllItems");
             _isEqualWeightForAllItems = isEqualWeightForAllItems.boolValue;
-
-            _selectableValues = property.FindPropertyRelative("_selectableValues");
 
             if (property.isExpanded && _selectableValues.isExpanded)
             {

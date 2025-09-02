@@ -12,6 +12,8 @@ namespace RandomElementsSystem.Editor
     {
         protected bool _isEqualWeightForAllItems;
         protected SerializedProperty _selectableValues;
+        private int _previousArraySize;
+        private bool _isInitialized;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -21,6 +23,7 @@ namespace RandomElementsSystem.Editor
             _isEqualWeightForAllItems = isEqualWeightForAllItems.boolValue;
 
             _selectableValues = property.FindPropertyRelative("_selectableValues");
+            SetDefaultWeightForNewElements(property);
 
             if (property.isExpanded && _selectableValues.isExpanded)
             {
@@ -119,7 +122,43 @@ namespace RandomElementsSystem.Editor
         {
             return EditorGUI.GetPropertyHeight(property, label, true);
         }
+
+        private void SetDefaultWeightForNewElements(SerializedProperty property)
+        {
+            if (_selectableValues == null)
+            {
+                return;
+            }
+
+            var currentSize = _selectableValues.arraySize;
+
+            if (!_isInitialized)
+            {
+                _isInitialized = true;
+                _previousArraySize = currentSize;
+                return;
+            }
+
+            if (currentSize == 1 && _previousArraySize == 0)
+            {
+                var element = _selectableValues.GetArrayElementAtIndex(0);
+                var weight = element.FindPropertyRelative("_weight");
+                if (!Mathf.Approximately(weight.floatValue, 1f))
+                {
+                    weight.floatValue = 1f;
+                    property.serializedObject.ApplyModifiedProperties();
+                }
+            }
+            else if (currentSize > _previousArraySize)
+            {
+                var element = _selectableValues.GetArrayElementAtIndex(currentSize - 1);
+                var weight = element.FindPropertyRelative("_weight");
+                weight.floatValue = 0f;
+                property.serializedObject.ApplyModifiedProperties();
+            }
+
+            _previousArraySize = currentSize;
+        }
     }
 }
-
 #endif

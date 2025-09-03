@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 
 using RandomElementsSystem.Types;
+using System.Collections.Generic;
 
 using UnityEditor;
 using UnityEngine;
@@ -12,7 +13,7 @@ namespace RandomElementsSystem.Editor
     {
         protected bool _isEqualWeightForAllItems;
         protected SerializedProperty _selectableValues;
-        private int _previousArraySize;
+        protected readonly Dictionary<string, int> _propertyToArraySize = new();
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -129,27 +130,23 @@ namespace RandomElementsSystem.Editor
                 return;
             }
 
-            var currentSize = _selectableValues.arraySize;
+            var propertyKey = property.propertyPath;
+            _propertyToArraySize.TryGetValue(propertyKey, out var previousSize);
 
-            if (currentSize == 1)
+            var currentSize = _selectableValues.arraySize;
+            if (currentSize > previousSize)
             {
-                var element = _selectableValues.GetArrayElementAtIndex(0);
-                var weight = element.FindPropertyRelative("_weight");
-                if (!Mathf.Approximately(weight.floatValue, 1f))
+                for (int i = previousSize; i < currentSize; i++)
                 {
-                    weight.floatValue = 1f;
-                    property.serializedObject.ApplyModifiedProperties();
+                    var element = _selectableValues.GetArrayElementAtIndex(i);
+                    var weight = element.FindPropertyRelative("_weight");
+                    weight.floatValue = currentSize == 1 && i == 0 ? 1f : 0f;
                 }
-            }
-            else if (currentSize > _previousArraySize)
-            {
-                var element = _selectableValues.GetArrayElementAtIndex(currentSize - 1);
-                var weight = element.FindPropertyRelative("_weight");
-                weight.floatValue = 0f;
+
                 property.serializedObject.ApplyModifiedProperties();
             }
 
-            _previousArraySize = currentSize;
+            _propertyToArraySize[propertyKey] = currentSize;
         }
     }
 }

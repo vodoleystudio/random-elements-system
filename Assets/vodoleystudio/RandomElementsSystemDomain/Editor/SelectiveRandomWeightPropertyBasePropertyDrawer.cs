@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
 
 using RandomElementsSystem.Types;
-using System.Collections.Generic;
 
 using UnityEditor;
 using UnityEngine;
@@ -13,7 +12,6 @@ namespace RandomElementsSystem.Editor
     {
         protected bool _isEqualWeightForAllItems;
         protected SerializedProperty _selectableValues;
-        protected readonly Dictionary<string, int> _propertyToArraySize = new();
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -23,7 +21,6 @@ namespace RandomElementsSystem.Editor
             _isEqualWeightForAllItems = isEqualWeightForAllItems.boolValue;
 
             _selectableValues = property.FindPropertyRelative("_selectableValues");
-            SetDefaultWeightForNewElements(property);
 
             if (property.isExpanded && _selectableValues.isExpanded)
             {
@@ -121,32 +118,6 @@ namespace RandomElementsSystem.Editor
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             return EditorGUI.GetPropertyHeight(property, label, true);
-        }
-
-        private void SetDefaultWeightForNewElements(SerializedProperty property)
-        {
-            if (_selectableValues == null)
-            {
-                return;
-            }
-
-            var propertyKey = property.propertyPath;
-            _propertyToArraySize.TryGetValue(propertyKey, out var previousSize);
-
-            var currentSize = _selectableValues.arraySize;
-            if (currentSize > previousSize)
-            {
-                for (int i = previousSize; i < currentSize; i++)
-                {
-                    var element = _selectableValues.GetArrayElementAtIndex(i);
-                    var weight = element.FindPropertyRelative("_weight");
-                    weight.floatValue = currentSize == 1 && i == 0 ? 1f : 0f;
-                }
-
-                property.serializedObject.ApplyModifiedProperties();
-            }
-
-            _propertyToArraySize[propertyKey] = currentSize;
         }
     }
 }

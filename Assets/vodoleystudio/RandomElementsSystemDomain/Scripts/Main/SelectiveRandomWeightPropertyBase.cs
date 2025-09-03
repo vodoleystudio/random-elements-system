@@ -103,13 +103,29 @@ namespace RandomElementsSystem.Types
         /// <returns>Collection of T items as Keys and their weights as Values</returns>
         public IReadOnlyDictionary<T, float> GetValueToProbabilityCollection()
         {
-            var weightPropertyToProbabilityCollection = _selectableValues.ToDictionary(x => x.Value, x => GetProbabilityByIndex(_selectableValues.IndexOf(x)));
-            foreach (var item in _usedSelectableValues)
+            // return the value as key and its probability as value: if there are duplicates - return only as one key-value pair with sum of weights for exclude exception
+            var valueToProbabilityCollection = new Dictionary<T, float>();
+            foreach (var selectableValue in _selectableValues)
             {
-                weightPropertyToProbabilityCollection.Add(item.Value, WeightProperty<T>.MinWeight);
+                if (!valueToProbabilityCollection.ContainsKey(selectableValue.Value))
+                {
+                    valueToProbabilityCollection[selectableValue.Value] = GetProbabilityByIndex(_selectableValues.IndexOf(selectableValue));
+                }
+                else
+                {
+                    valueToProbabilityCollection[selectableValue.Value] += GetProbabilityByIndex(_selectableValues.IndexOf(selectableValue));
+                }
             }
 
-            return weightPropertyToProbabilityCollection;
+            foreach (var usedSelectableValue in _usedSelectableValues)
+            {
+                if (!valueToProbabilityCollection.ContainsKey(usedSelectableValue.Value))
+                {
+                    valueToProbabilityCollection[usedSelectableValue.Value] = WeightProperty<T>.MinWeight;
+                }
+            }
+
+            return valueToProbabilityCollection;
         }
 
         protected override T GenerateRandomValue()

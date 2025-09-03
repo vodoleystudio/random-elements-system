@@ -99,11 +99,11 @@ namespace RandomElementsSystem.Types
 
         /// <summary>
         /// Get all T items from collection with their weights.
+        /// If there are duplicates - return only as one key-value pair with sum of weights
         /// </summary>
         /// <returns>Collection of T items as Keys and their weights as Values</returns>
         public IReadOnlyDictionary<T, float> GetValueToProbabilityCollection()
         {
-            // return the value as key and its probability as value: if there are duplicates - return only as one key-value pair with sum of weights for exclude exception
             var valueToProbabilityCollection = new Dictionary<T, float>();
             foreach (var selectableValue in _selectableValues)
             {
